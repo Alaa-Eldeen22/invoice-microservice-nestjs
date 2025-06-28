@@ -16,8 +16,4 @@ export class DueDate {
   isBefore(date: Date): boolean {
     return this.value.getTime() < date.getTime();
   }
-
-  toJSON() {
-    return this.value.toISOString();
-  }
 }

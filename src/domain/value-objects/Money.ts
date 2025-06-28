@@ -1,4 +1,3 @@
-// src/domain/value-objects/Money.ts
 
 export class Money {
   private constructor(
@@ -76,15 +75,5 @@ export class Money {
       throw new Error('Cannot sum an empty Money list');
     }
     return list.reduce((acc, m) => acc.add(m));
-  }
-
-  /**
-   * Serialize to a JSON-friendly representation.
-   */
-  toJSON() {
-    return {
-      amount: this.amount,
-      currency: this.currency,
-    };
   }
 }

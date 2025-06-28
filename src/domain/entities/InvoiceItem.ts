@@ -26,16 +26,4 @@ export class InvoiceItem {
   get total(): Money {
     return this.unitPrice.multiply(this.quantity);
   }
-
-  /**
-   * Serialize to JSON-friendly object
-   */
-  toJSON() {
-    return {
-      description: this.description,
-      quantity: this.quantity,
-      unitPrice: this.unitPrice.toJSON(),
-      total: this.total.toJSON(),
-    };
-  }
 }

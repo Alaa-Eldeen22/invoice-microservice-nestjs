@@ -2,6 +2,8 @@ import { InvoiceItem } from './InvoiceItem';
 import { Money } from '../value-objects/Money';
 import { DueDate } from '../value-objects/DueDate';
 import { InvoiceStatus } from '../enums/InvoiceStatus';
+import { DomainEvent } from '../events/DomainEvent';
+import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
 
 export class Invoice {
   private _id: string;
@@ -15,17 +17,16 @@ export class Invoice {
   private _paidAt?: Date;
   private _canceledAt?: Date;
   private _notes?: string;
+  private domainEvents: DomainEvent[] = [];
 
-  constructor(
+  private constructor(
     id: string,
     clientId: string,
     items: InvoiceItem[],
     dueDate: DueDate,
-    createdAt: Date = new Date(),
+    createdAt: Date,
     notes?: string,
   ) {
-    if (!items.length) throw new Error('Invoice must have at least one item');
-
     this._id = id;
     this._clientId = clientId;
     this._items = items;
@@ -35,6 +36,59 @@ export class Invoice {
     this._createdAt = createdAt;
     this._updatedAt = createdAt;
     this._notes = notes;
+  }
+
+  static create(
+    id: string,
+    clientId: string,
+    items: InvoiceItem[],
+    dueDate: DueDate,
+    notes?: string,
+  ): Invoice {
+    if (!items.length) {
+      throw new Error('Invoice must have at least one item');
+    }
+
+    const createdAt = new Date();
+    const invoice = new Invoice(id, clientId, items, dueDate, createdAt, notes);
+
+    // Emit creation event
+    invoice.addDomainEvent(
+      new InvoiceCreatedEvent(
+        invoice._id,
+        invoice._clientId,
+        invoice._total,
+        invoice._dueDate.value,
+        invoice._items.length,
+      ),
+    );
+
+    return invoice;
+  }
+
+  static reconstruct(
+    id: string,
+    clientId: string,
+    items: InvoiceItem[],
+    total: Money,
+    status: InvoiceStatus,
+    dueDate: DueDate,
+    createdAt: Date,
+    updatedAt: Date,
+    paidAt?: Date,
+    canceledAt?: Date,
+    notes?: string,
+  ): Invoice {
+    const invoice = new Invoice(id, clientId, items, dueDate, createdAt, notes);
+
+    // Set persisted state without triggering domain events
+    invoice._total = total;
+    invoice._status = status;
+    invoice._updatedAt = updatedAt;
+    invoice._paidAt = paidAt;
+    invoice._canceledAt = canceledAt;
+
+    return invoice;
   }
 
   get id() {
@@ -140,7 +194,21 @@ export class Invoice {
     );
   }
 
-  // ─── INTERNAL HELPERS ─────────────────────────────────
+  getDomainEvents(): DomainEvent[] {
+    const events = [...this.domainEvents];
+
+    this.clearDomainEvents();
+    return events;
+  }
+
+  private clearDomainEvents(): void {
+    this.domainEvents = [];
+  }
+
+  private addDomainEvent(event: DomainEvent): void {
+    this.domainEvents.push(event);
+  }
+
   private ensureModifiable() {
     if (this._status !== InvoiceStatus.PENDING) {
       throw new Error(
@@ -151,22 +219,5 @@ export class Invoice {
 
   private touch() {
     this._updatedAt = new Date();
-  }
-
-  // ─── SERIALIZATION ────────────────────────────────────
-  toJSON() {
-    return {
-      id: this._id,
-      clientId: this._clientId,
-      items: this._items.map((i) => i.toJSON?.() ?? i),
-      total: this._total.toJSON(),
-      status: this._status,
-      dueDate: this._dueDate.value,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      paidAt: this._paidAt,
-      canceledAt: this._canceledAt,
-      notes: this._notes,
-    };
   }
 }
