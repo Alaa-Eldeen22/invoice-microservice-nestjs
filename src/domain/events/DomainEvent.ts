@@ -1,10 +1,10 @@
 export abstract class DomainEvent {
   public readonly occurredOn: Date;
-  public readonly aggregateId: string;
+  public readonly invoiceId: string;
 
-  constructor(aggregateId: string) {
+  constructor(invoiceId: string) {
     this.occurredOn = new Date();
-    this.aggregateId = aggregateId;
+    this.invoiceId = invoiceId;
   }
 
   abstract get name(): string;

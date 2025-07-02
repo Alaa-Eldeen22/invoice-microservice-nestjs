@@ -1,7 +1,6 @@
 import { Invoice } from 'src/domain/entities/Invoice';
 import { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoiceItem } from 'src/domain/entities/InvoiceItem';
-import { InvoiceStatus } from 'src/domain/enums/InvoiceStatus';
 import { DueDate } from 'src/domain/value-objects/DueDate';
 import { Money } from 'src/domain/value-objects/Money';
 

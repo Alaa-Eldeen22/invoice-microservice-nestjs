@@ -16,7 +16,7 @@ import { InvoiceMapper } from '../mappers/invoice.mapper';
 export class TypeormInvoiceRepository implements InvoiceRepository {
   constructor(
     @InjectRepository(InvoiceEntity)
-    private readonly invoiceEntityRepository: Repository<InvoiceEntity>,
+    private readonly invoiceRepository: Repository<InvoiceEntity>,
   ) {}
 
   /**
@@ -25,7 +25,24 @@ export class TypeormInvoiceRepository implements InvoiceRepository {
    */
   async save(invoice: Invoice): Promise<void> {
     const invoiceEntity = InvoiceMapper.toEntity(invoice);
-    await this.invoiceEntityRepository.save(invoiceEntity);
+    await this.invoiceRepository.save(invoiceEntity);
+  }
+
+  /**
+   * Finds a single invoice by its unique identifier.
+   * @param invoiceId - The unique identifier of the invoice
+   * @returns Promise resolving to an Invoice domain object or null if not found
+   */
+  async findById(invoiceId: string): Promise<Invoice | null> {
+    const invoice = await this.invoiceRepository.findOne({
+      where: { id: invoiceId },
+    });
+
+    if (!invoice) {
+      return null;
+    }
+
+    return InvoiceMapper.toDomain(invoice);
   }
 
   /**
@@ -38,7 +55,7 @@ export class TypeormInvoiceRepository implements InvoiceRepository {
     clientId: string,
     invoiceStatus: InvoiceStatus,
   ): Promise<Invoice[]> {
-    const foundInvoiceEntities = await this.invoiceEntityRepository.find({
+    const foundInvoiceEntities = await this.invoiceRepository.find({
       where: {
         clientId,
         status: invoiceStatus,
@@ -51,30 +68,13 @@ export class TypeormInvoiceRepository implements InvoiceRepository {
   }
 
   /**
-   * Finds a single invoice by its unique identifier.
-   * @param invoiceId - The unique identifier of the invoice
-   * @returns Promise resolving to an Invoice domain object or null if not found
-   */
-  async findById(invoiceId: string): Promise<Invoice | null> {
-    const foundInvoiceEntity = await this.invoiceEntityRepository.findOne({
-      where: { id: invoiceId },
-    });
-
-    if (!foundInvoiceEntity) {
-      return null;
-    }
-
-    return InvoiceMapper.toDomain(foundInvoiceEntity);
-  }
-
-  /**
    * Finds all overdue invoices based on a reference date.
    * An invoice is considered overdue if it's pending and its due date is before the check date.
    * @param referenceDate - The date to compare against invoice due dates
    * @returns Promise resolving to an array of overdue Invoice domain objects
    */
   async findOverdue(referenceDate: Date): Promise<Invoice[]> {
-    const overdueInvoiceEntities = await this.invoiceEntityRepository.find({
+    const overdueInvoiceEntities = await this.invoiceRepository.find({
       where: {
         status: InvoiceStatus.PENDING,
         dueDate: LessThan(referenceDate),

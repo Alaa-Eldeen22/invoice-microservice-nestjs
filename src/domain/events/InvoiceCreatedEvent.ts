@@ -1,5 +1,5 @@
-import { Money } from "../value-objects/Money";
-import { DomainEvent } from "./DomainEvent";
+import { Money } from '../value-objects/Money';
+import { DomainEvent } from './DomainEvent';
 
 export class InvoiceCreatedEvent extends DomainEvent {
   constructor(
@@ -7,12 +7,12 @@ export class InvoiceCreatedEvent extends DomainEvent {
     public readonly clientId: string,
     public readonly total: Money,
     public readonly dueDate: Date,
-    public readonly itemCount: number
+    public readonly itemCount: number,
   ) {
     super(aggregateId);
   }
 
   get name(): string {
-    return 'InvoiceCreated';
+    return 'invoice.created';
   }
 }

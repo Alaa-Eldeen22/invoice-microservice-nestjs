@@ -4,7 +4,7 @@ import { DueDate } from '../value-objects/DueDate';
 import { InvoiceStatus } from '../enums/InvoiceStatus';
 import { DomainEvent } from '../events/DomainEvent';
 import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
-
+import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -162,7 +162,10 @@ export class Invoice {
     this._status = InvoiceStatus.PAID;
     this._paidAt = date;
     this.touch();
-    // Emit domain event: InvoicePaid
+
+    this.addDomainEvent(
+      new InvoicePaidEvent(this._id, this._clientId, this._total, this._paidAt),
+    );
   }
 
   cancel(reason: string): void {
