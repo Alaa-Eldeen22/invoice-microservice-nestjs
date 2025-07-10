@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Patch } from '@nestjs/common';
 import { CreateInvoiceDto } from '../dtos/create-invoice.dto';
 import { CreateInvoiceUseCase } from '../../../application/use-cases/create-invoice.use-case';
 import { InvoiceMapper } from '../mappers/invoice.mapper';
 import { DomainEvent } from 'src/domain/events/DomainEvent';
 import { EventBus } from 'src/application/ports/event-bus.port';
+import { CancelInvoiceUseCase } from 'src/application/use-cases/cancel-invoice.use-case';
 
 class TestEvent implements DomainEvent {
   public occurredOn: Date;
@@ -26,6 +27,7 @@ class TestEvent implements DomainEvent {
 export class InvoiceController {
   constructor(
     private readonly createInvoicUseCase: CreateInvoiceUseCase,
+    private readonly cancelInvoiceUseCase: CancelInvoiceUseCase,
     private readonly eventBus: EventBus,
   ) {}
 
@@ -36,7 +38,12 @@ export class InvoiceController {
     return InvoiceMapper.toResponse(invoice);
   }
 
-  @Get(":id")
+  @Patch(':id/cancel')
+  async cancel(@Query('id') id: string, @Body('reason') reason: string) {
+    await this.cancelInvoiceUseCase.execute(id, reason);
+    return { message: 'Invoice canceled' };
+  }
+  @Get(':id')
   async find(@Query('id') id: string) {
     const testEvent = new TestEvent(id, new Date());
 

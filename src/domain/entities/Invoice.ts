@@ -6,6 +6,7 @@ import { DomainEvent } from '../events/DomainEvent';
 import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
 import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
 import { InvoiceFailedEvent } from '../events/invoice-failed.event';
+import { InvoiceCanceledEvent } from '../events/invoice-canceled.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -178,7 +179,9 @@ export class Invoice {
     this._status = InvoiceStatus.CANCELED;
     this._canceledAt = new Date();
     this.touch();
-    // Emit domain event: InvoiceCanceled
+    this.addDomainEvent(
+      new InvoiceCanceledEvent(this._id, reason, this._canceledAt),
+    );
   }
 
   applyLateFee(fee: InvoiceItem): void {
@@ -231,12 +234,12 @@ export class Invoice {
       this._status === InvoiceStatus.CANCELED ||
       this._status === InvoiceStatus.FAILED
     ) {
-      throw new Error('Cannot mark invoice as failed in current state: ' + this._status);
+      throw new Error(
+        'Cannot mark invoice as failed in current state: ' + this._status,
+      );
     }
     this._status = InvoiceStatus.FAILED;
     this.touch();
-    this.addDomainEvent(
-      new InvoiceFailedEvent(this._id, reason, failedAt),
-    );
+    this.addDomainEvent(new InvoiceFailedEvent(this._id, reason, failedAt));
   }
 }
