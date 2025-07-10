@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Query, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  Patch,
+  Param,
+} from '@nestjs/common';
 import { CreateInvoiceDto } from '../dtos/create-invoice.dto';
 import { CreateInvoiceUseCase } from '../../../application/use-cases/create-invoice.use-case';
 import { InvoiceMapper } from '../mappers/invoice.mapper';
@@ -43,10 +51,10 @@ export class InvoiceController {
     await this.cancelInvoiceUseCase.execute(id, reason);
     return { message: 'Invoice canceled' };
   }
-  @Get(':id')
-  async find(@Query('id') id: string) {
-    const testEvent = new TestEvent(id, new Date());
 
+  @Get(':id')
+  async find(@Param('id') id: string) {
+    const testEvent = new TestEvent(id, new Date());
     await this.eventBus.publish([testEvent]);
     return { message: 'Test event published successfully' };
   }

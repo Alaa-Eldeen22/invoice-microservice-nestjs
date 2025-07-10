@@ -1,35 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import {
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
-import { EventBus } from '../../application/ports/event-bus.port';
-import { DomainEvent } from '../../domain/events/DomainEvent';
+  import { Injectable } from '@nestjs/common';
+  import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+  import { DomainEvent } from 'src/domain/events/DomainEvent';
+  import { EventBus } from 'src/application/ports/event-bus.port';
 
-@Injectable()
-export class RabbitMQEventBus implements EventBus {
-  private client: ClientProxy;
-  constructor() {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://localhost:5672'],
-        queue: 'invoice_events',
-        queueOptions: { durable: true },
-      },
-    });
-  }
+  @Injectable()
+  export class RabbitMQEventBus implements EventBus {
+    constructor(private readonly amqp: AmqpConnection) {}
 
-  /**
-   * Publishes a list of domain events to the RabbitMQ event bus.
-   * @param events - An array of DomainEvent objects to be published
-   */
-  async publish(events: DomainEvent[]): Promise<void> {
-    await this.client.connect();
-    for (const event of events) {
-      await this.client.emit(event.name, event).toPromise();
-      console.log(`Event published: ${event.name}`);
+    /**
+     * Publishes each DomainEvent onto the 'invoice_events' exchange using
+     * its .name as the routing key.
+     */
+    async publish(events: DomainEvent[]): Promise<void> {
+      for (const event of events) {
+        this.amqp.publish('invoice_events', event.name, event);
+        console.log(`Event published: ${event.name}`);
+      }
     }
   }
-}
