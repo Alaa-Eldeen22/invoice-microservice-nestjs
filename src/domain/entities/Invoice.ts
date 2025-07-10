@@ -5,6 +5,7 @@ import { InvoiceStatus } from '../enums/InvoiceStatus';
 import { DomainEvent } from '../events/DomainEvent';
 import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
 import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
+import { InvoiceFailedEvent } from '../events/invoice-failed.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -222,5 +223,20 @@ export class Invoice {
 
   private touch() {
     this._updatedAt = new Date();
+  }
+
+  markAsFailed(reason: string, failedAt: Date = new Date()): void {
+    if (
+      this._status === InvoiceStatus.PAID ||
+      this._status === InvoiceStatus.CANCELED ||
+      this._status === InvoiceStatus.FAILED
+    ) {
+      throw new Error('Cannot mark invoice as failed in current state: ' + this._status);
+    }
+    this._status = InvoiceStatus.FAILED;
+    this.touch();
+    this.addDomainEvent(
+      new InvoiceFailedEvent(this._id, reason, failedAt),
+    );
   }
 }
