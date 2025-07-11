@@ -1,98 +1,203 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Invoice Microservice (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Welcome to the **Invoice Microservice** — a modern, event-driven backend service dedicated to managing invoices as part of a distributed architecture.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Built with **Node.js**, **NestJS**, **PostgreSQL**, **TypeORM**, and **RabbitMQ**, it follows **Domain-Driven Design (DDD)** and **Clean Architecture** principles to ensure scalability, testability, and maintainability.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📅 Tech Stack
 
-## Project setup
+* **Node.js**
+* **NestJS** (Modular architecture, DI)
+* **PostgreSQL** (Relational database)
+* **TypeORM** (ORM for PostgreSQL)
+* **RabbitMQ** (Asynchronous event communication)
 
-```bash
-$ npm install
+---
+
+## 📁 Folder Structure Overview
+
+```
+src/
+├── app.module.ts                # Main NestJS module
+├── main.ts                      # Entry point
+│
+├── config/                      # Config loaders for .env (RabbitMQ, DB)
+│
+├── domain/                      # 💡 Business logic (DDD)
+│   ├── entities/                # Aggregates: Invoice, InvoiceItem
+│   ├── value-objects/           # Immutable concepts: Money, DueDate
+│   ├── enums/                   # Domain enums like InvoiceStatus
+│   ├── repositories/            # Repository interfaces
+│   └── events/                  # Domain events
+│
+├── application/                 # 🚦 Use cases & service ports
+│   ├── use-cases/               # Business rules: Create, Cancel, etc.
+│   └── ports/                   # Interfaces like EventBus, IdGenerator
+│
+├── infrastructure/              # 🌐 Integration/adapters
+│   ├── database/                # TypeORM setup
+│   ├── messaging/               # RabbitMQ integration
+│   └── services/                # Utility services (e.g., UUID)
+│
+├── interfaces/                  # 📱 REST & messaging interfaces
+│   ├── http/                    # Controllers, DTOs, mappers
+│   └── messaging/               # RabbitMQ listeners
+│
+├── modules/                     # NestJS modules
+│   ├── invoice.module.ts
+│   └── messaging.module.ts
 ```
 
-## Compile and run the project
+---
+
+## ⚙️ Getting Started
+
+### 📓 1. Clone & Install
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/your-username/invoice-microservice-nestjs.git
+cd invoice-microservice-nestjs
+npm install
 ```
 
-## Run tests
+### 🗄️ 2. Set Up PostgreSQL
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+sudo service postgresql start
+psql -U postgres
+CREATE DATABASE invoices;
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 📩 3. Set Up RabbitMQ
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+sudo service rabbitmq-server start
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 🚧 4. Configure Environment
 
-## Resources
+```bash
+cp .env.example .env
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+> All required variables are in `.env.example`. Customize them as needed.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🧪 Run the App
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+App runs on: [http://localhost:3000](http://localhost:3000)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 🛠️ Architecture
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project follows **DDD** and **Clean Architecture**. Each layer has its own responsibility:
+
+### 🧠 Domain Layer
+
+Core business rules with no external dependencies.
+
+```ts
+// domain/entities/Invoice.ts
+invoice.addItem(item);
+invoice.cancel(reason);
+```
+
+### 🚦 Application Layer
+
+Use cases orchestrate domain logic.
+
+```ts
+// application/use-cases/cancel-invoice.use-case.ts
+await cancelInvoiceUseCase.execute(invoiceId, reason);
+```
+
+### 🌍 Infrastructure Layer
+
+Implements persistence, messaging, and utilities.
+
+```ts
+// infrastructure/database/repositories/invoice.repository.ts
+save(invoice: Invoice): Promise<void>
+```
+
+### 📱 Interfaces Layer
+
+Exposes APIs and listeners.
+
+```ts
+// interfaces/http/controllers/invoice.controller.ts
+@Post('/invoices') createInvoice() { ... }
+```
+
+---
+
+## 📩 REST API Endpoints
+
+| Method | Endpoint                    | Description              |
+| ------ | --------------------------- | ------------------------ |
+| POST   | `/invoices`                 | Create a new invoice     |
+| PATCH  | `/invoices/:id/add-item`    | Add an item              |
+| PATCH  | `/invoices/:id/remove-item` | Remove an item           |
+| PATCH  | `/invoices/:id/cancel`      | Cancel an invoice        |
+| GET    | `/invoices/:id`             | Retrieve invoice details |
+
+---
+
+## 📢 Event Listeners (RabbitMQ)
+
+* **`PaymentSucceededListener`**
+
+  * `payment.succeeded` → Marks invoice as paid
+  * Emits `invoice.paid` domain event
+
+* **`PaymentFailedListener`**
+
+  * `payment.failed` → Marks invoice as failed
+
+---
+
+## 📚 Features
+
+* ✅ Domain-driven business logic
+* ✅ Event-driven with RabbitMQ
+* ✅ RESTful API
+* ✅ Clean and testable architecture
+* ✅ Easily extensible use cases
+* ✅ Type-safe DTOs and mappers
+
+---
+
+## 🧰 Environment Variables Reference
+
+| Variable                 | Description                     | Example                        |
+| ------------------------ | ------------------------------- | ------------------------------ |
+| `RABBITMQ_URI`           | RabbitMQ connection string      | `amqp://guest:guest@localhost` |
+| `RABBITMQ_EXCHANGE_NAME` | Exchange name                   | `invoice_events`               |
+| `RABBITMQ_EXCHANGE_TYPE` | Exchange type (`topic`, etc.)   | `topic`                        |
+| `RABBITMQ_PREFETCH`      | Prefetch count for consumer     | `10`                           |
+| `DB_HOST`                | PostgreSQL host                 | `localhost`                    |
+| `DB_PORT`                | PostgreSQL port                 | `5432`                         |
+| `DB_USERNAME`            | PostgreSQL user                 | `postgres`                     |
+| `DB_PASSWORD`            | PostgreSQL password             | `postgres`                     |
+| `DB_NAME`                | Database name                   | `invoices`                     |
+| `DB_SYNC`                | Auto-sync schema (`true/false`) | `true`                         |
+
+---
+
+## 🤝 Contributing
+
+Pull requests and feedback are welcome!
+If you find this helpful or use it in your project, give it a ⭐ on GitHub!
+
+---
+
+**Crafted with ❤️ using NestJS, DDD & Event-Driven Design**
+Feel free to fork, integrate, and extend this microservice!
