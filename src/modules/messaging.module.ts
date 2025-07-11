@@ -2,24 +2,35 @@ import { Module } from '@nestjs/common';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { RabbitMQEventBus } from 'src/infrastructure/messaging/rabbitmq-event-bus';
 import { EventBus } from 'src/application/ports/event-bus.port';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 @Module({
   imports: [
-    RabbitMQModule.forRoot({
-      exchanges: [
-        {
-          name: 'invoice_events',
-          type: 'topic',
-        },
-      ],
-      uri: 'amqp://guest:guest@localhost:5672',
-      connectionInitOptions: {
-        wait: true,
-      },
-      channels: {
-        default: {
-          prefetchCount: 10,
-          default: true,
-        },
+    ConfigModule,
+
+    RabbitMQModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const rabbit = configService.get('rabbitmq');
+        return {
+          exchanges: [
+            {
+              name: rabbit.exchangeName,
+              type: rabbit.exchangeType,
+            },
+          ],
+          uri: rabbit.uri,
+          connectionInitOptions: {
+            wait: true,
+          },
+          channels: {
+            default: {
+              prefetchCount: rabbit.prefetchCount,
+              default: true,
+            },
+          },
+        };
       },
     }),
   ],
