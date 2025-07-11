@@ -1,6 +1,5 @@
 import { Invoice } from '../../../domain/entities/Invoice';
-import { InvoiceItem } from '../../../domain/entities/InvoiceItem';
-import { Money } from '../../../domain/value-objects/Money';
+import { InvoiceItemMapper } from './invoice-item.mapper';
 import { DueDate } from '../../../domain/value-objects/DueDate';
 import { InvoiceResponseDto } from '../dtos/invoice-response.dto';
 import { CreateInvoiceDto } from 'src/interfaces/http/dtos/create-invoice.dto';
@@ -10,18 +9,7 @@ export class InvoiceMapper {
     return {
       id: invoice.id,
       clientId: invoice.clientId,
-      items: invoice.items.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: {
-          amount: item.unitPrice.amount,
-          currency: item.unitPrice.currency,
-        },
-        total: {
-          amount: item.total.amount,
-          currency: item.total.currency,
-        },
-      })),
+      items: invoice.items.map(InvoiceItemMapper.toResponse),
       total: {
         amount: invoice.total.amount,
         currency: invoice.total.currency,
@@ -38,17 +26,13 @@ export class InvoiceMapper {
 
   static toDomainInput(dto: CreateInvoiceDto): {
     clientId: string;
-    items: InvoiceItem[];
+    items: any[];
     dueDate: DueDate;
     notes?: string;
   } {
-    const items = dto.items.map((itemDto) => {
-      const unitPrice = Money.of(
-        itemDto.unitPrice.amount,
-        itemDto.unitPrice.currency,
-      );
-      return new InvoiceItem(itemDto.description, itemDto.quantity, unitPrice);
-    });
+    const items = dto.items.map((itemDto) =>
+      InvoiceItemMapper.toDomain(itemDto),
+    );
 
     const dueDate = new DueDate(new Date(dto.dueDate));
 

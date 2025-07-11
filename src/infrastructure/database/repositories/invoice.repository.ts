@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 
@@ -34,6 +34,10 @@ export class TypeormInvoiceRepository implements InvoiceRepository {
    * @returns Promise resolving to an Invoice domain object or null if not found
    */
   async findById(invoiceId: string): Promise<Invoice | null> {
+    if (!invoiceId) {
+      throw new BadRequestException('Invoice ID must be provided');
+    }
+
     const invoice = await this.invoiceRepository.findOne({
       where: { id: invoiceId },
     });

@@ -7,6 +7,7 @@ import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
 import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
 import { InvoiceFailedEvent } from '../events/invoice-failed.event';
 import { InvoiceCanceledEvent } from '../events/invoice-canceled.event';
+import { InvoiceItemAddedEvent } from '../events/invoice-item-added.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -132,6 +133,9 @@ export class Invoice {
     this._items.push(item);
     this._total = this._total.add(item.total);
     this.touch();
+    this.addDomainEvent(
+      new InvoiceItemAddedEvent(this._id, item, new Date(), this._clientId),
+    );
   }
 
   removeItem(index: number): void {

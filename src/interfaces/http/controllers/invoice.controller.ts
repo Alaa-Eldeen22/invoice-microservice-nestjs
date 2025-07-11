@@ -1,18 +1,13 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Query,
-  Patch,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Param } from '@nestjs/common';
 import { CreateInvoiceDto } from '../dtos/create-invoice.dto';
 import { CreateInvoiceUseCase } from '../../../application/use-cases/create-invoice.use-case';
 import { InvoiceMapper } from '../mappers/invoice.mapper';
 import { DomainEvent } from 'src/domain/events/DomainEvent';
 import { EventBus } from 'src/application/ports/event-bus.port';
 import { CancelInvoiceUseCase } from 'src/application/use-cases/cancel-invoice.use-case';
+import { AddInvoiceItemUseCase } from 'src/application/use-cases/add-invoice-item.use-case';
+import { AddInvoiceItemDto } from '../dtos/add-invoice-item.dto';
+import { InvoiceItemMapper } from '../mappers/invoice-item.mapper';
 
 class TestEvent implements DomainEvent {
   public occurredOn: Date;
@@ -36,6 +31,7 @@ export class InvoiceController {
   constructor(
     private readonly createInvoicUseCase: CreateInvoiceUseCase,
     private readonly cancelInvoiceUseCase: CancelInvoiceUseCase,
+    private readonly addInvoiceItemUseCase: AddInvoiceItemUseCase,
     private readonly eventBus: EventBus,
   ) {}
 
@@ -47,9 +43,16 @@ export class InvoiceController {
   }
 
   @Patch(':id/cancel')
-  async cancel(@Query('id') id: string, @Body('reason') reason: string) {
+  async cancel(@Param('id') id: string, @Body('reason') reason: string) {
     await this.cancelInvoiceUseCase.execute(id, reason);
     return { message: 'Invoice canceled' };
+  }
+
+  @Patch(':id/add-item')
+  async addItem(@Param('id') id: string, @Body() dto: AddInvoiceItemDto) {
+    const item = InvoiceItemMapper.toDomain(dto);
+    await this.addInvoiceItemUseCase.execute(id, item);
+    return { message: 'Item added to invoice' };
   }
 
   @Get(':id')
