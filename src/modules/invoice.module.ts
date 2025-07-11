@@ -14,6 +14,7 @@ import { MessagingModule } from './messaging.module';
 import { IdGenerator } from 'src/application/ports/id-generator.port';
 import { InvoiceRepository } from 'src/domain/repositories/InvoiceRepository';
 import { AddInvoiceItemUseCase } from 'src/application/use-cases/add-invoice-item.use-case';
+import { RemoveInvoiceItemUseCase } from 'src/application/use-cases/remove-invoice-item.use-case';
 
 @Module({
   imports: [TypeOrmModule.forFeature([InvoiceEntity]), MessagingModule],
@@ -24,6 +25,7 @@ import { AddInvoiceItemUseCase } from 'src/application/use-cases/add-invoice-ite
     MarkInvoiceAsFailedUseCase,
     CancelInvoiceUseCase,
     AddInvoiceItemUseCase,
+    RemoveInvoiceItemUseCase,
     { provide: InvoiceRepository, useClass: TypeormInvoiceRepository },
     { provide: IdGenerator, useClass: UuidGenerator },
     PaymentSucceededListener,

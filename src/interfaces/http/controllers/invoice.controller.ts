@@ -8,6 +8,7 @@ import { CancelInvoiceUseCase } from 'src/application/use-cases/cancel-invoice.u
 import { AddInvoiceItemUseCase } from 'src/application/use-cases/add-invoice-item.use-case';
 import { AddInvoiceItemDto } from '../dtos/add-invoice-item.dto';
 import { InvoiceItemMapper } from '../mappers/invoice-item.mapper';
+import { RemoveInvoiceItemUseCase } from 'src/application/use-cases/remove-invoice-item.use-case';
 
 class TestEvent implements DomainEvent {
   public occurredOn: Date;
@@ -32,6 +33,8 @@ export class InvoiceController {
     private readonly createInvoicUseCase: CreateInvoiceUseCase,
     private readonly cancelInvoiceUseCase: CancelInvoiceUseCase,
     private readonly addInvoiceItemUseCase: AddInvoiceItemUseCase,
+    private readonly removeInvoiceItemUseCase: RemoveInvoiceItemUseCase,
+
     private readonly eventBus: EventBus,
   ) {}
 
@@ -53,6 +56,12 @@ export class InvoiceController {
     const item = InvoiceItemMapper.toDomain(dto);
     await this.addInvoiceItemUseCase.execute(id, item);
     return { message: 'Item added to invoice' };
+  }
+
+  @Patch(':id/remove-item')
+  async removeItem(@Param('id') id: string, @Body('index') index: number) {
+    await this.removeInvoiceItemUseCase.execute(id, index);
+    return { message: 'Item removed from invoice' };
   }
 
   @Get(':id')

@@ -8,6 +8,7 @@ import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
 import { InvoiceFailedEvent } from '../events/invoice-failed.event';
 import { InvoiceCanceledEvent } from '../events/invoice-canceled.event';
 import { InvoiceItemAddedEvent } from '../events/invoice-item-added.event';
+import { InvoiceItemRemovedEvent } from '../events/invoice-item-removed.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -145,6 +146,14 @@ export class Invoice {
     const removed = this._items.splice(index, 1)[0];
     this._total = this._total.subtract(removed.total);
     this.touch();
+    this.addDomainEvent(
+      new InvoiceItemRemovedEvent(
+        this._id,
+        new Date(),
+        this._clientId,
+        removed,
+      ),
+    );
   }
 
   updateDueDate(newDate: DueDate): void {
