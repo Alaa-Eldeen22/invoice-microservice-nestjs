@@ -1,7 +1,7 @@
 # compiled output
-/dist
-/node_modules
-/build
+/invoice-microservice-nestjs/dist
+/invoice-microservice-nestjs/node_modules
+/invoice-microservice-nestjs/build
 
 # Logs
 logs
