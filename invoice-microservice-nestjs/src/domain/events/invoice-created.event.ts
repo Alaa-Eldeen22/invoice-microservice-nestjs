@@ -5,7 +5,8 @@ export class InvoiceCreatedEvent extends DomainEvent {
   constructor(
     aggregateId: string,
     public readonly clientId: string,
-    public readonly total: Money,
+    public readonly amount: number,
+    public readonly currency: string,
     public readonly dueDate: Date,
     public readonly itemCount: number,
   ) {

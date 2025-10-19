@@ -3,12 +3,12 @@ import { Money } from '../value-objects/Money';
 import { DueDate } from '../value-objects/DueDate';
 import { InvoiceStatus } from '../enums/InvoiceStatus';
 import { DomainEvent } from '../events/DomainEvent';
-import { InvoiceCreatedEvent } from '../events/InvoiceCreatedEvent';
-import { InvoicePaidEvent } from '../events/InvoicePaidEvent';
 import { InvoiceFailedEvent } from '../events/invoice-failed.event';
 import { InvoiceCanceledEvent } from '../events/invoice-canceled.event';
 import { InvoiceItemAddedEvent } from '../events/invoice-item-added.event';
 import { InvoiceItemRemovedEvent } from '../events/invoice-item-removed.event';
+import { InvoiceCreatedEvent } from '../events/invoice-created.event';
+import { InvoicePaidEvent } from '../events/invoice-paid.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -61,7 +61,8 @@ export class Invoice {
       new InvoiceCreatedEvent(
         invoice._id,
         invoice._clientId,
-        invoice._total,
+        invoice._total.amount,
+        invoice._total.currency,
         invoice._dueDate.value,
         invoice._items.length,
       ),
