@@ -234,7 +234,11 @@ export class Invoice {
   }
 
   markAsAuthorized(date: Date = new Date()): void {
-    if (this._status !== InvoiceStatus.PENDING) {
+    if (
+      this._status !== InvoiceStatus.PENDING &&
+      this._status !== InvoiceStatus.LATE &&
+      this._status !== InvoiceStatus.FAILED
+    ) {
       throw new Error('Only pending invoices can be authorized');
     }
     this._status = InvoiceStatus.AUTHORIZED;
