@@ -5,17 +5,14 @@ import { DueDate } from 'src/domain/value-objects/DueDate';
 import { Money } from 'src/domain/value-objects/Money';
 
 export class InvoiceMapper {
-   static toDomain(entity: InvoiceEntity): Invoice {
+  static toDomain(entity: InvoiceEntity): Invoice {
     // Convert entity items to domain objects
     const invoiceItems = entity.items.map(
       (item) =>
         new InvoiceItem(
           item.description,
           item.quantity,
-          Money.of(
-            parseFloat(item.unitPriceAmount),
-            item.unitPriceCurrency,
-          ),
+          Money.of(parseFloat(item.unitPriceAmount), item.unitPriceCurrency),
         ),
     );
 
@@ -38,6 +35,7 @@ export class InvoiceMapper {
       entity.updatedAt,
       entity.paidAt,
       entity.canceledAt,
+      entity.authorizedAt,
       entity.notes,
     );
 
@@ -59,6 +57,7 @@ export class InvoiceMapper {
     entity.updatedAt = invoice.updatedAt;
     entity.paidAt = invoice.paidAt;
     entity.canceledAt = invoice.canceledAt;
+    entity.authorizedAt = invoice.authorizedAt;
 
     // Convert invoice items to entity format
     entity.items = invoice.items.map((item) => ({

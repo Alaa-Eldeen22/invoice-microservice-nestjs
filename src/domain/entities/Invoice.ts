@@ -9,6 +9,7 @@ import { InvoiceItemAddedEvent } from '../events/invoice-item-added.event';
 import { InvoiceItemRemovedEvent } from '../events/invoice-item-removed.event';
 import { InvoiceCreatedEvent } from '../events/invoice-created.event';
 import { InvoicePaidEvent } from '../events/invoice-paid.event';
+import { InvoiceRetriedEvent } from '../events/invoice-retried.event';
 export class Invoice {
   private _id: string;
   private _clientId: string;
@@ -20,6 +21,7 @@ export class Invoice {
   private _updatedAt: Date;
   private _paidAt?: Date;
   private _canceledAt?: Date;
+  private _authorizedAt?: Date; // added authorizedAt
   private _notes?: string;
   private domainEvents: DomainEvent[] = [];
 
@@ -82,6 +84,7 @@ export class Invoice {
     updatedAt: Date,
     paidAt?: Date,
     canceledAt?: Date,
+    authorizedAt?: Date, // added authorizedAt param
     notes?: string,
   ): Invoice {
     const invoice = new Invoice(id, clientId, items, dueDate, createdAt, notes);
@@ -92,6 +95,7 @@ export class Invoice {
     invoice._updatedAt = updatedAt;
     invoice._paidAt = paidAt;
     invoice._canceledAt = canceledAt;
+    invoice._authorizedAt = authorizedAt; // set authorizedAt
 
     return invoice;
   }
@@ -126,6 +130,11 @@ export class Invoice {
   get canceledAt() {
     return this._canceledAt;
   }
+
+  get authorizedAt() {
+    return this._authorizedAt; // added getter
+  }
+
   get notes() {
     return this._notes;
   }
@@ -198,6 +207,23 @@ export class Invoice {
     );
   }
 
+  retry(): void {
+    if (this._status !== InvoiceStatus.FAILED) {
+      throw new Error('Only failed invoices can be retried');
+    }
+    this._status = InvoiceStatus.PENDING;
+    this.touch();
+
+    this.addDomainEvent(
+      new InvoiceRetriedEvent(
+        this._id,
+        this._clientId,
+        this.total.amount,
+        this.total.currency,
+      ),
+    );
+  }
+
   applyLateFee(fee: InvoiceItem): void {
     if (this._status !== InvoiceStatus.PENDING) return;
     this._items.push(fee);
@@ -205,6 +231,15 @@ export class Invoice {
     this._status = InvoiceStatus.LATE;
     this.touch();
     // Emit domain event: LateFeeApplied
+  }
+
+  markAsAuthorized(date: Date = new Date()): void {
+    if (this._status !== InvoiceStatus.PENDING) {
+      throw new Error('Only pending invoices can be authorized');
+    }
+    this._status = InvoiceStatus.AUTHORIZED;
+    this._authorizedAt = date; // set authorizedAt
+    this.touch();
   }
 
   isOverdue(now: Date = new Date()): boolean {
@@ -242,7 +277,7 @@ export class Invoice {
     this._updatedAt = new Date();
   }
 
-  markAsFailed(reason: string, failedAt: Date = new Date()): void {
+  markAsFailed(reason?: string): void {
     if (
       this._status === InvoiceStatus.PAID ||
       this._status === InvoiceStatus.CANCELED ||
@@ -254,6 +289,6 @@ export class Invoice {
     }
     this._status = InvoiceStatus.FAILED;
     this.touch();
-    this.addDomainEvent(new InvoiceFailedEvent(this._id, reason, failedAt));
+    // this.addDomainEvent(new InvoiceFailedEvent(this._id, reason, failedAt));
   }
 }

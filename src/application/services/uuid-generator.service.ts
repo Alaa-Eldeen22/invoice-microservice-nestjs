@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IdGenerator } from '../../application/ports/id-generator.port';
+import { IdGenerator } from '../ports/out/id-generator.port';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

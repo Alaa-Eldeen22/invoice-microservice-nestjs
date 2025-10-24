@@ -26,6 +26,7 @@ export class InvoiceMapper {
 
   static toDomainInput(dto: CreateInvoiceDto): {
     clientId: string;
+    paymentMethodId: string;
     items: any[];
     dueDate: DueDate;
     notes?: string;
@@ -41,6 +42,7 @@ export class InvoiceMapper {
       items,
       dueDate,
       notes: dto.notes,
+      paymentMethodId: dto.paymentMethodId,
     };
   }
 }

@@ -30,7 +30,6 @@ export class InvoiceEntity {
   @Column()
   totalCurrency: string;
 
-
   @Column()
   status: InvoiceStatus;
 
@@ -45,6 +44,9 @@ export class InvoiceEntity {
 
   @Column('timestamptz', { nullable: true })
   paidAt?: Date;
+
+  @Column('timestamptz', { nullable: true })
+  authorizedAt?: Date;
 
   @Column('timestamptz', { nullable: true })
   canceledAt?: Date;

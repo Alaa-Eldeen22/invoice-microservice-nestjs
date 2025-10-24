@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { RabbitMQEventBus } from 'src/infrastructure/messaging/rabbitmq-event-bus';
-import { EventBus } from 'src/application/ports/event-bus.port';
+import { EventBus } from 'src/application/ports/out/event-bus.port';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({

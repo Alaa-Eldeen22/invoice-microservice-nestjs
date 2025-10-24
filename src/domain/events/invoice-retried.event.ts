@@ -1,18 +1,16 @@
 import { DomainEvent } from './DomainEvent';
 
-export class InvoiceCreatedEvent extends DomainEvent {
+export class InvoiceRetriedEvent extends DomainEvent {
   constructor(
-    public invoiceId: string,
+    public readonly invoiceId: string,
     public readonly clientId: string,
     public readonly amount: number,
     public readonly currency: string,
-    public readonly dueDate: Date,
-    public readonly itemCount: number,
   ) {
     super(invoiceId);
   }
 
   get name(): string {
-    return 'invoice.created';
+    return 'invoice.retried';
   }
 }
