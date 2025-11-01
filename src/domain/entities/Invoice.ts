@@ -21,7 +21,7 @@ export class Invoice {
   private _updatedAt: Date;
   private _paidAt?: Date;
   private _canceledAt?: Date;
-  private _authorizedAt?: Date; // added authorizedAt
+  private _authorizedAt?: Date;
   private _notes?: string;
   private domainEvents: DomainEvent[] = [];
 
@@ -58,7 +58,6 @@ export class Invoice {
     const createdAt = new Date();
     const invoice = new Invoice(id, clientId, items, dueDate, createdAt, notes);
 
-    // Emit creation event
     invoice.addDomainEvent(
       new InvoiceCreatedEvent(
         invoice._id,
@@ -84,7 +83,7 @@ export class Invoice {
     updatedAt: Date,
     paidAt?: Date,
     canceledAt?: Date,
-    authorizedAt?: Date, // added authorizedAt param
+    authorizedAt?: Date,
     notes?: string,
   ): Invoice {
     const invoice = new Invoice(id, clientId, items, dueDate, createdAt, notes);
@@ -95,7 +94,7 @@ export class Invoice {
     invoice._updatedAt = updatedAt;
     invoice._paidAt = paidAt;
     invoice._canceledAt = canceledAt;
-    invoice._authorizedAt = authorizedAt; // set authorizedAt
+    invoice._authorizedAt = authorizedAt;
 
     return invoice;
   }
@@ -132,7 +131,7 @@ export class Invoice {
   }
 
   get authorizedAt() {
-    return this._authorizedAt; // added getter
+    return this._authorizedAt;
   }
 
   get notes() {
@@ -177,15 +176,12 @@ export class Invoice {
     this.touch();
   }
 
-  markAsPaid(date: Date = new Date()): void {
-    if (
-      this._status !== InvoiceStatus.PENDING &&
-      this._status !== InvoiceStatus.LATE
-    ) {
-      throw new Error('Only pending or late invoices can be paid');
+  markAsPaid(paidAt: Date): void {
+    if (this._status !== InvoiceStatus.AUTHORIZED) {
+      throw new Error('Only authorized invoices can be paid');
     }
     this._status = InvoiceStatus.PAID;
-    this._paidAt = date;
+    this._paidAt = paidAt;
     this.touch();
 
     this.addDomainEvent(
@@ -193,18 +189,17 @@ export class Invoice {
     );
   }
 
-  cancel(reason: string): void {
+  cancel(canceledAt: Date): void {
     if (this._status === InvoiceStatus.PAID) {
       throw new Error('Cannot cancel a paid invoice');
     }
     if (this._status === InvoiceStatus.CANCELED) return;
 
+    this._canceledAt = canceledAt;
     this._status = InvoiceStatus.CANCELED;
     this._canceledAt = new Date();
     this.touch();
-    this.addDomainEvent(
-      new InvoiceCanceledEvent(this._id, reason, this._canceledAt),
-    );
+    this.addDomainEvent(new InvoiceCanceledEvent(this._id, this._canceledAt));
   }
 
   retry(): void {
@@ -242,7 +237,7 @@ export class Invoice {
       throw new Error('Only pending invoices can be authorized');
     }
     this._status = InvoiceStatus.AUTHORIZED;
-    this._authorizedAt = date; // set authorizedAt
+    this._authorizedAt = date;
     this.touch();
   }
 

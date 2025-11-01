@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { DomainEvent } from 'src/domain/events/DomainEvent';
 import { EventBus } from 'src/application/ports/out/event-bus.port';
 
 @Injectable()
@@ -18,7 +17,6 @@ export class RabbitMQEventBus implements EventBus {
         delete event['clientId'];
       }
       this.amqp.publish('invoice_events', event.name, event);
-      console.log('customerId', event['customerId']);
       console.log(`Event published: ${event.name}`);
     }
   }

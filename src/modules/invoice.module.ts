@@ -24,6 +24,8 @@ import { RetryInvoiceService } from 'src/application/services/retry-invoice.serv
 import { RemoveInvoiceItemService } from 'src/application/services/remove-invoice-item.service';
 import { MarkInvoiceAsAuthorizedUseCase } from 'src/application/ports/in/use-cases/mark-invoice-as-authorized.use-case';
 import { MarkInvoiceAsAuthorizedService } from 'src/application/services/mark-invoice-as-authorized.service';
+import { CaptureInvoiceUseCase } from 'src/application/ports/in/use-cases/capture-invoice.use-case';
+import { CaptureInvoiceService } from 'src/application/services/capture-invoice.service';
 @Module({
   imports: [TypeOrmModule.forFeature([InvoiceEntity]), MessagingModule],
   controllers: [InvoiceController],
@@ -42,7 +44,10 @@ import { MarkInvoiceAsAuthorizedService } from 'src/application/services/mark-in
       provide: MarkInvoiceAsAuthorizedUseCase,
       useClass: MarkInvoiceAsAuthorizedService,
     },
-
+    {
+      provide: CaptureInvoiceUseCase,
+      useClass: CaptureInvoiceService,
+    },
     { provide: InvoiceRepository, useClass: TypeormInvoiceRepository },
     { provide: IdGenerator, useClass: UuidGenerator },
     RabbitPaymentEventConsumer,

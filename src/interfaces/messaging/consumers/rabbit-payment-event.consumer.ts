@@ -2,15 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { MarkInvoiceAsAuthorizedUseCase } from 'src/application/ports/in/use-cases/mark-invoice-as-authorized.use-case';
 import { MarkInvoiceAsFailedUseCase } from 'src/application/ports/in/use-cases/mark-invoice-as-failed.use-case';
+import { CaptureInvoiceUseCase } from 'src/application/ports/in/use-cases/capture-invoice.use-case';
+import { CancelInvoiceUseCase } from 'src/application/ports/in/use-cases/cancel-invoice.use-case';
 
 const PAYMENT_AUTHORIZED_ROUTING_KEY = 'payment.authorized';
 const PAYMENT_FAILED_ROUTING_KEY = 'payment.failed';
+const PAYMENT_CAPTURED_ROUTING_KEY = 'payment.captured';
+const PAYMENT_VOIDED_ROUTING_KEY = 'payment.voided';
 
 @Injectable()
 export class RabbitPaymentEventConsumer {
   constructor(
     private readonly markInvoiceAsAuthorizedUseCase: MarkInvoiceAsAuthorizedUseCase,
     private readonly markInvoiceAsFailedUseCase: MarkInvoiceAsFailedUseCase,
+    private readonly captureInvoiceUseCase: CaptureInvoiceUseCase,
+    private readonly cancelInvoiceUseCase: CancelInvoiceUseCase,
   ) {}
 
   @RabbitSubscribe({
@@ -21,10 +27,16 @@ export class RabbitPaymentEventConsumer {
 
     switch (routingKey) {
       case PAYMENT_AUTHORIZED_ROUTING_KEY:
-        await this.handlePaymentAuthorized(msg);
+        this.handlePaymentAuthorized(msg);
         break;
       case PAYMENT_FAILED_ROUTING_KEY:
-        await this.handlePaymentFailed(msg);
+        this.handlePaymentFailed(msg);
+        break;
+      case PAYMENT_CAPTURED_ROUTING_KEY:
+        this.handlePaymentCaptured(msg);
+        break;
+      case PAYMENT_VOIDED_ROUTING_KEY:
+        this.handlePaymentCanceled(msg);
         break;
       default:
         console.warn(`Unhandled routing key: ${routingKey}`);
@@ -46,6 +58,19 @@ export class RabbitPaymentEventConsumer {
       msg.invoiceId,
       msg.reason,
     );
+  }
+
+  async handlePaymentCaptured(msg: any) {
+    console.log('Received Payment captured message', msg);
+    const capturedAt = this.extractDate(msg);
+
+    await this.captureInvoiceUseCase.capture(msg.invoiceId, capturedAt);
+  }
+
+  async handlePaymentCanceled(msg: any) {
+    console.log('Received Payment canceled message', msg);
+    const canceledAt = this.extractDate(msg);
+    await this.cancelInvoiceUseCase.cancel(msg.invoiceId, canceledAt);
   }
 
   private extractDate(msg: any): Date {

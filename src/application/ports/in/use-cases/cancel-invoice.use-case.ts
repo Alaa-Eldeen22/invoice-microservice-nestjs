@@ -1,3 +1,3 @@
 export abstract class CancelInvoiceUseCase {
-  abstract cancel(invoiceId: string, reason?: string): Promise<void>;
+  abstract cancel(invoiceId: string, canceledAt: Date): Promise<void>;
 }
